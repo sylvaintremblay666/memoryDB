@@ -43,7 +43,7 @@ func putTX(k string, v string, transactionID string) error {
 	var tx txData
 	var ok bool
 	if tx, ok = txmap[transactionID]; !ok {
-		return errors.New("Transaction \"" + transactionID + "\" NOT found")
+		return errors.New("Transaction \"" + transactionID + "\" is NOT active")
 	}
 
 	// If not saved yet in the origValuesMap, keep the original value
@@ -53,10 +53,6 @@ func putTX(k string, v string, transactionID string) error {
 
 	// Then keep the change in the newValuesMap
 	tx.newValuesMap[k] = v
-
-	fmt.Println("After put:")
-	fmt.Println(tx.origValuesMap) // to remove
-	fmt.Println(tx.newValuesMap)  // to remove
 	return nil
 }
 
@@ -73,7 +69,7 @@ func Get(args ...string) (string, error) {
 		return getTX(args[0], args[1])
 	}
 
-	return "", errors.New("Wrong argument(s) using the Put function")
+	return "", errors.New("Wrong argument(s) using the Get function")
 }
 
 func getTX(k string, transactionID string) (string, error) {
@@ -82,7 +78,7 @@ func getTX(k string, transactionID string) (string, error) {
 	var val string
 
 	if tx, ok = txmap[transactionID]; !ok {
-		return "", errors.New("Transaction \"" + transactionID + "\" NOT found")
+		return "", errors.New("Transaction \"" + transactionID + "\" is NOT active")
 	}
 
 	if val, ok = tx.newValuesMap[k]; ok {
@@ -111,19 +107,18 @@ func Delete(args ...string) error {
 		return deleteTX(args[0], args[1])
 	}
 
-	return errors.New("Wrong argument(s) using the Put function")
+	return errors.New("Wrong argument(s) using the Delete function")
 }
 
 func deleteTX(k string, transactionID string) error {
 	var tx txData
 	var ok bool
 	if tx, ok = txmap[transactionID]; !ok {
-		return errors.New("Transaction \"" + transactionID + "\" NOT found")
+		return errors.New("Transaction \"" + transactionID + "\" is NOT active")
 	}
 
 	tx.newValuesMap[k] = deletedStr
 
-	fmt.Println(tx) // to remove
 	return nil
 }
 
@@ -150,7 +145,7 @@ func CommitTransaction(transactionID string) error {
 	var tx txData
 	var ok bool
 	if tx, ok = txmap[transactionID]; !ok {
-		return errors.New("Transaction \"" + transactionID + "\" NOT found")
+		return errors.New("Transaction \"" + transactionID + "\" is NOT active")
 	}
 
 	// Make sure no key affected by the transaction mutated since it started. If so, rollback
@@ -172,6 +167,5 @@ func CommitTransaction(transactionID string) error {
 
 	delete(txmap, transactionID)
 
-	fmt.Println(tx)
 	return nil
 }

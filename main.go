@@ -8,158 +8,86 @@ import (
 )
 
 func main() {
-	fmt.Println("hello world")
+	// I'm NOT doing extended testing / validation / error checking in this main
+  // but simply using the api expecting it to work properly. Look at the
+  // "kvdb/kvdb_test.go" file for real tests with 100% coverage.
 
-	kvdb.Put("Yo", "Ya")
+  // First scenario from the exercise (no tx)
+  fmt.Println("---== First Scenario ==---")
+	kvdb.Put("example", "foo")
 
-	val, err := kvdb.Get("Yo")
-	if err == nil {
-		fmt.Println("Value: " + val)
-	} else {
-		fmt.Println("No value found, error is: " + err.Error())
-	}
+  val, _ := kvdb.Get("example")
+  fmt.Println("Value for example : " + val)
 
-	val, err = kvdb.Get("Ya")
-	if err == nil {
-		fmt.Println("Value: " + val)
-	} else {
-		fmt.Println("Error: " + err.Error())
-	}
+  kvdb.Delete("example")
 
-	kvdb.Delete("Yo")
-
-	val, err = kvdb.Get("Yo")
-	if err == nil {
-		fmt.Println("Value: " + val)
-	} else {
-		fmt.Println("No value found, error is: " + err.Error())
-	}
-
-  err = kvdb.CreateTransaction("toto")
+  _, err := kvdb.Get("example")
   if err != nil {
-    fmt.Println("Error creating transaction toto : " + err.Error())
-  } else {
-    fmt.Println("Transaction toto created")
+    fmt.Println(err.Error())
   }
 
-  err = kvdb.CreateTransaction("toto")
+  kvdb.Delete("example")
+  _, err = kvdb.Get("example")
   if err != nil {
-    fmt.Println("Error creating transaction toto : " + err.Error())
-  } else {
-    fmt.Println("Transaction toto created")
+    fmt.Println(err.Error())
   }
 
-  err = kvdb.Put("key", "val", "tx1")
+  fmt.Println()
+
+  // Second scenario from the exercise
+  fmt.Println("---== Second Scenario ==---")
+
+  kvdb.CreateTransaction("abc")
+  kvdb.Put("a", "foo", "abc")
+  val, _ = kvdb.Get("a", "abc")
+  fmt.Println("Value for key \"a\" in tx \"abc\": " + val)
+
+  _, err = kvdb.Get("a")
   if err != nil {
-    fmt.Println("Put error : " + err.Error())
-  } else {
-    fmt.Println("put ok")
+    fmt.Println(err.Error())
   }
 
-  err = kvdb.Put("key", "firstval")
+  kvdb.CreateTransaction("xyz")
+  kvdb.Put("a", "bar", "xyz")
+  val, _ = kvdb.Get("a", "xyz")
+  fmt.Println("Value for key \"a\" in tx \"xyz\": " + val)
+
+  kvdb.CommitTransaction("xyz")
+  val, _ = kvdb.Get("a")
+  fmt.Println("Value for key \"a\": " + val)
+
+  err = kvdb.CommitTransaction("abc")
   if err != nil {
-    fmt.Println("Put error : " + err.Error())
-  } else {
-    fmt.Println("put ok")
+    fmt.Println(err.Error())
   }
 
+  val, _ = kvdb.Get("a")
+  fmt.Println("Value for key \"a\": " + val)
 
-  err = kvdb.Put("key", "val", "toto")
+  kvdb.CreateTransaction("abc")
+  kvdb.Put("a", "foo", "abc")
+  val, _ = kvdb.Get("a")
+  fmt.Println("Value for key \"a\": " + val)
+  kvdb.RollbackTransaction("abc")
+  err = kvdb.Put("a", "foo", "abc")
   if err != nil {
-    fmt.Println("TX Put error : " + err.Error())
-  } else {
-    fmt.Println("TX put ok")
+    fmt.Println(err.Error())
   }
 
-  err = kvdb.Put("key", "newval", "toto")
+  val, _ = kvdb.Get("a")
+  fmt.Println("Value for key \"a\": " + val)
+
+  kvdb.CreateTransaction("def")
+  err = kvdb.Put("b", "foo", "def")
   if err != nil {
-    fmt.Println("TX Put error : " + err.Error())
+    fmt.Println(err.Error())
   } else {
-    fmt.Println("TX put ok")
+    fmt.Println("According to the scenario this Put should fail, but I think its an error in the scenario...?")
   }
 
-  err = kvdb.Put("ted", "valted", "toto")
-  if err != nil {
-    fmt.Println("ted TX Put error : " + err.Error())
-  } else {
-    fmt.Println("ted TX put ok")
-  }
+  val, _ = kvdb.Get("a", "def")
+  fmt.Println("Value for key \"a\": " + val)
 
-  val, err = kvdb.Get("key")
-  if err != nil {
-    fmt.Println("Get error : " + err.Error())
-  } else {
-    fmt.Println("Get ok : " + val)
-  }
+  kvdb.RollbackTransaction("def")
 
-  val, err = kvdb.Get("key", "toto")
-  if err != nil {
-    fmt.Println("TX Get error : " + err.Error())
-  } else {
-    fmt.Println("TX Get ok : " + val)
-  }
-
-  err = kvdb.Delete("key", "toto")
-  if err != nil {
-    fmt.Println("TX Delete error : " + err.Error())
-  } else {
-    fmt.Println("TX Delete ok")
-  }
-
-  val, err = kvdb.Get("key", "toto")
-  if err != nil {
-    fmt.Println("TX Get error : " + err.Error())
-  } else {
-    fmt.Println("TX Get ok : " + val)
-  }
-
-  val, err = kvdb.Get("key")
-  if err != nil {
-    fmt.Println("Get error : " + err.Error())
-  } else {
-    fmt.Println("Get ok : " + val)
-  }
-/*
-  err = kvdb.Put("key", "mutated")
-  if err != nil {
-    fmt.Println("Put error : " + err.Error())
-  } else {
-    fmt.Println("put ok")
-  }*/
-
-  err = kvdb.Put("anotherKey", "anotherValue", "toto")
-  if err != nil {
-    fmt.Println("Put error : " + err.Error())
-  } else {
-    fmt.Println("put ok")
-  }
-
-  err = kvdb.CommitTransaction("toto")
-  if err != nil {
-    fmt.Println("Commit error : " + err.Error())
-  } else {
-    fmt.Println("Commit success")
-  }
-
-  val, err = kvdb.Get("key")
-  if err != nil {
-    fmt.Println("Get error : " + err.Error())
-  } else {
-    fmt.Println("Get ok : " + val)
-  }
-
-  val, err = kvdb.Get("anotherKey")
-  if err != nil {
-    fmt.Println("Get error : " + err.Error())
-  } else {
-    fmt.Println("Get ok : " + val)
-  }
-
-	/*
-	   e := echo.New()
-	   e.GET("/", func(c echo.Context) error {
-	     return c.String(http.StatusOK, "Hello, World!")
-	   })
-	   e.Logger.Fatal(e.Start(":1323"))
-	*/
 }
