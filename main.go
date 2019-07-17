@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 	"memoryDB/kvdb"
-	//  "net/http"
-	//  "github.com/labstack/echo"
 )
 
 func main() {
-	// I'm NOT doing extended testing / validation / error checking in this main
+  // I'm NOT doing extended testing / validation / error checking in this main
   // but simply using the api expecting it to work properly. Look at the
   // "kvdb/kvdb_test.go" file for real tests with 100% coverage.
 
